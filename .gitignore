@@ -5,3 +5,24 @@
 Thumbs.db
 Desktop.ini
 .DS_Store
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+build/
+*.tsbuildinfo
+next-env.d.ts
+
+# Env
+.env
+.env*.local
+
+# Vercel
+.vercel
+
+# Locally-stored survey photos (dev filesystem storage)
+public/uploads/
+
+# Application logs
+logs/

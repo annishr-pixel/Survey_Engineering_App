@@ -1,0 +1,792 @@
+{
+  "id": "fa9c33d0-10bc-451f-89d9-98896b5d3167",
+  "prevId": "52c230e6-a17f-419a-8659-47da771cc793",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.leads": {
+      "name": "leads",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "job_id": {
+          "name": "job_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "enquiry_page_id": {
+          "name": "enquiry_page_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "customer_details_page_id": {
+          "name": "customer_details_page_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "customer_name": {
+          "name": "customer_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "phone": {
+          "name": "phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "address": {
+          "name": "address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "postcode": {
+          "name": "postcode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "property_use": {
+          "name": "property_use",
+          "type": "property_use",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "service_interested": {
+          "name": "service_interested",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "initial_estimated_amount": {
+          "name": "initial_estimated_amount",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "annual_consumption_kwh": {
+          "name": "annual_consumption_kwh",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "current_electricity_price": {
+          "name": "current_electricity_price",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pv_installed": {
+          "name": "pv_installed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fit_arrangement": {
+          "name": "fit_arrangement",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "conservation_area": {
+          "name": "conservation_area",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "council_details": {
+          "name": "council_details",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notion_status": {
+          "name": "notion_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "customer_approval": {
+          "name": "customer_approval",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reason_for_rejection": {
+          "name": "reason_for_rejection",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "synced_at": {
+          "name": "synced_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "leads_job_id_unique": {
+          "name": "leads_job_id_unique",
+          "columns": [
+            {
+              "expression": "job_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.photos": {
+      "name": "photos",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "survey_id": {
+          "name": "survey_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "section": {
+          "name": "section",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "blob_url": {
+          "name": "blob_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "blob_pathname": {
+          "name": "blob_pathname",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "caption": {
+          "name": "caption",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "content_type": {
+          "name": "content_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "size_bytes": {
+          "name": "size_bytes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "uploaded_at": {
+          "name": "uploaded_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "photos_survey_id_surveys_id_fk": {
+          "name": "photos_survey_id_surveys_id_fk",
+          "tableFrom": "photos",
+          "tableTo": "surveys",
+          "columnsFrom": [
+            "survey_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.surveys": {
+      "name": "surveys",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "lead_id": {
+          "name": "lead_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "job_id": {
+          "name": "job_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "surveyor_id": {
+          "name": "surveyor_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "survey_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'draft'"
+        },
+        "scaffold_front": {
+          "name": "scaffold_front",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "scaffold_rear": {
+          "name": "scaffold_rear",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "scaffold_gable": {
+          "name": "scaffold_gable",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "scaffold_permit_required": {
+          "name": "scaffold_permit_required",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "roof_type": {
+          "name": "roof_type",
+          "type": "roof_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "roof_pitch_deg": {
+          "name": "roof_pitch_deg",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "roof_azimuth_deg": {
+          "name": "roof_azimuth_deg",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rafter_thickness_mm": {
+          "name": "rafter_thickness_mm",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rafter_spacing_mm": {
+          "name": "rafter_spacing_mm",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rot_present": {
+          "name": "rot_present",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "multiple_roof_faces": {
+          "name": "multiple_roof_faces",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "roof_face_count": {
+          "name": "roof_face_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mount_type": {
+          "name": "mount_type",
+          "type": "mount_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "viable_system_kw": {
+          "name": "viable_system_kw",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "panel_wattage_w": {
+          "name": "panel_wattage_w",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "panel_quantity": {
+          "name": "panel_quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "inverter_quantity": {
+          "name": "inverter_quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "battery_capacity_kwh": {
+          "name": "battery_capacity_kwh",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pas63100_compliant": {
+          "name": "pas63100_compliant",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dc_cable_length_m": {
+          "name": "dc_cable_length_m",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ac_cable_length_m": {
+          "name": "ac_cable_length_m",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "consumer_unit_spare_ways": {
+          "name": "consumer_unit_spare_ways",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "main_fuse_rating": {
+          "name": "main_fuse_rating",
+          "type": "main_fuse_rating",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "looped_supply": {
+          "name": "looped_supply",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "smets2_present": {
+          "name": "smets2_present",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "wifi_strength": {
+          "name": "wifi_strength",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "labour_man_days": {
+          "name": "labour_man_days",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "groundworks_trenching": {
+          "name": "groundworks_trenching",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "remedial_works": {
+          "name": "remedial_works",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dno_connection": {
+          "name": "dno_connection",
+          "type": "dno_connection",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "export_limitation": {
+          "name": "export_limitation",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "planning_permission_required": {
+          "name": "planning_permission_required",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "listed_building": {
+          "name": "listed_building",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "article_4": {
+          "name": "article_4",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "building_regs_parts": {
+          "name": "building_regs_parts",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mcs_applicable": {
+          "name": "mcs_applicable",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "estimated_yield_kwh": {
+          "name": "estimated_yield_kwh",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cu_upgrade_required": {
+          "name": "cu_upgrade_required",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tree_trimming_required": {
+          "name": "tree_trimming_required",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dno_fees_expected": {
+          "name": "dno_fees_expected",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "planning_fees_expected": {
+          "name": "planning_fees_expected",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "asbestos_present": {
+          "name": "asbestos_present",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "showstopper_present": {
+          "name": "showstopper_present",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ev_future": {
+          "name": "ev_future",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "heatpump_future": {
+          "name": "heatpump_future",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "eps_backup": {
+          "name": "eps_backup",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "extras": {
+          "name": "extras",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "notion_pushed": {
+          "name": "notion_pushed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "submitted_at": {
+          "name": "submitted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "surveys_job_id_unique": {
+          "name": "surveys_job_id_unique",
+          "columns": [
+            {
+              "expression": "job_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "surveys_lead_id_leads_id_fk": {
+          "name": "surveys_lead_id_leads_id_fk",
+          "tableFrom": "surveys",
+          "tableTo": "leads",
+          "columnsFrom": [
+            "lead_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "surveys_surveyor_id_users_id_fk": {
+          "name": "surveys_surveyor_id_users_id_fk",
+          "tableFrom": "surveys",
+          "tableTo": "users",
+          "columnsFrom": [
+            "surveyor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.users": {
+      "name": "users",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "password_hash": {
+          "name": "password_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "role": {
+          "name": "role",
+          "type": "role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'surveyor'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "users_email_unique": {
+          "name": "users_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.dno_connection": {
+      "name": "dno_connection",
+      "schema": "public",
+      "values": [
+        "G98",
+        "G99"
+      ]
+    },
+    "public.main_fuse_rating": {
+      "name": "main_fuse_rating",
+      "schema": "public",
+      "values": [
+        "60A",
+        "80A",
+        "100A",
+        "other"
+      ]
+    },
+    "public.mount_type": {
+      "name": "mount_type",
+      "schema": "public",
+      "values": [
+        "roof",
+        "ground"
+      ]
+    },
+    "public.property_use": {
+      "name": "property_use",
+      "schema": "public",
+      "values": [
+        "domestic",
+        "commercial"
+      ]
+    },
+    "public.role": {
+      "name": "role",
+      "schema": "public",
+      "values": [
+        "surveyor",
+        "sales"
+      ]
+    },
+    "public.roof_type": {
+      "name": "roof_type",
+      "schema": "public",
+      "values": [
+        "concrete_tile",
+        "slate",
+        "flat",
+        "metal",
+        "asbestos"
+      ]
+    },
+    "public.survey_status": {
+      "name": "survey_status",
+      "schema": "public",
+      "values": [
+        "draft",
+        "submitted"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

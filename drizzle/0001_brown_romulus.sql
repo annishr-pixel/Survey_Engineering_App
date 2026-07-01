@@ -1,0 +1,1 @@
+ALTER TABLE "leads" ADD COLUMN "reason_for_rejection" text;
