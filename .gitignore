@@ -26,3 +26,6 @@ public/uploads/
 
 # Application logs
 logs/
+
+.vercel
+.env*
