@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
+import { ShaderBackground } from "@/components/ui/shader-background";
 import { signOutAction } from "./actions";
 
 export default async function AppLayout({
@@ -17,8 +18,9 @@ export default async function AppLayout({
   const home = role === "sales" ? "/sales" : "/jobs";
 
   return (
-    <div className="min-h-screen">
-      <header className="sticky top-0 z-20 border-b border-slate-200 bg-slate-900 text-white">
+    <div className="relative min-h-screen">
+      <ShaderBackground />
+      <header className="sticky top-0 z-20 border-b border-white/10 bg-slate-900/80 text-white backdrop-blur-md">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
           <Link href={home} className="flex items-center gap-3">
             <Image
@@ -69,7 +71,11 @@ export default async function AppLayout({
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-5xl px-4 py-6">{children}</main>
+      <main className="relative z-10 mx-auto max-w-5xl px-4 py-6">
+        <div className="rounded-2xl bg-slate-50/85 p-4 shadow-2xl ring-1 ring-white/50 backdrop-blur-xl sm:p-6">
+          {children}
+        </div>
+      </main>
     </div>
   );
 }

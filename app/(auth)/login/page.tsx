@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import Image from "next/image";
-import { MeshGradient } from "@paper-design/shaders-react";
+import { ShaderBackground } from "@/components/ui/shader-background";
 import { authenticate, type LoginState } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Input, Label, FieldError } from "@/components/ui/field";
@@ -24,19 +24,7 @@ export default function LoginPage() {
   return (
     <div className="relative min-h-screen overflow-hidden">
       {/* Animated shader backdrop */}
-      <div className="fixed inset-0 z-0">
-        <MeshGradient
-          style={{ height: "100vh", width: "100vw" }}
-          distortion={0.8}
-          swirl={0.1}
-          offsetX={0}
-          offsetY={0}
-          scale={1}
-          rotation={0}
-          speed={1}
-          colors={["hsl(216, 90%, 27%)", "hsl(243, 68%, 36%)", "hsl(205, 91%, 64%)", "hsl(211, 61%, 57%)"]}
-        />
-      </div>
+      <ShaderBackground />
 
       <main className="relative z-10 flex min-h-screen items-center justify-center p-4">
         <Card className="w-full max-w-sm">
