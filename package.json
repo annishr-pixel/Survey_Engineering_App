@@ -18,6 +18,7 @@
     "@neondatabase/serverless": "^0.10.4",
     "@node-rs/argon2": "^2.0.2",
     "@notionhq/client": "^2.2.16",
+    "@paper-design/shaders-react": "^0.0.76",
     "@types/pg": "^8.20.0",
     "@vercel/blob": "^0.27.0",
     "clsx": "^2.1.1",
