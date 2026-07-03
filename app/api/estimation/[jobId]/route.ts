@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server";
-import { readdir, readFile } from "node:fs/promises";
-import path from "node:path";
+import { list } from "@vercel/blob";
 import { auth } from "@/lib/auth";
-import { env } from "@/lib/env";
 
 export const runtime = "nodejs";
 
 /**
- * Serves the initial-estimation PDF for a Job ID from INITIAL_ESTIMATION_FILE_PATH.
+ * Serves the initial-estimation PDF for a Job ID from Vercel Blob storage.
  * Files are named like "TL1906-01_yup roy_Initial_Estimation.pdf", so we match
  * by "<jobId>_" prefix (falling back to any PDF containing the job id).
  */
@@ -26,33 +24,35 @@ export async function GET(
     return NextResponse.json({ error: "Invalid job id" }, { status: 400 });
   }
 
-  const dir = env.INITIAL_ESTIMATION_FILE_PATH;
-  if (!dir) {
-    return NextResponse.json({ error: "Estimation folder not configured" }, { status: 404 });
-  }
-
-  let files: string[];
-  try {
-    files = await readdir(dir);
-  } catch {
-    return NextResponse.json({ error: "Estimation folder not found" }, { status: 404 });
-  }
-
   const lower = jobId.toLowerCase();
+
+  let blobs;
+  try {
+    const result = await list();
+    blobs = result.blobs;
+  } catch {
+    return NextResponse.json({ error: "Estimation storage not available" }, { status: 500 });
+  }
+
   const match =
-    files.find((f) => f.toLowerCase().endsWith(".pdf") && f.toLowerCase().startsWith(`${lower}_`)) ??
-    files.find((f) => f.toLowerCase().endsWith(".pdf") && f.toLowerCase().includes(lower));
+    blobs.find((b) => b.pathname.toLowerCase().endsWith(".pdf") && b.pathname.toLowerCase().startsWith(`${lower}_`)) ??
+    blobs.find((b) => b.pathname.toLowerCase().endsWith(".pdf") && b.pathname.toLowerCase().includes(lower));
 
   if (!match) {
     return NextResponse.json({ error: "No estimation PDF found for this job" }, { status: 404 });
   }
 
-  const buf = await readFile(path.join(dir, match));
+  const fileRes = await fetch(match.url);
+  if (!fileRes.ok) {
+    return NextResponse.json({ error: "Failed to retrieve estimation PDF" }, { status: 502 });
+  }
+  const buf = Buffer.from(await fileRes.arrayBuffer());
+
   return new NextResponse(new Uint8Array(buf), {
     status: 200,
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `inline; filename="${match.replace(/["\r\n]/g, "")}"`,
+      "Content-Disposition": `inline; filename="${match.pathname.replace(/["\r\n]/g, "")}"`,
     },
   });
 }
