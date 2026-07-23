@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { getAllUsers } from "@/actions/users";
+import { getAllUsers, type UserWithoutPassword } from "@/actions/users";
 import { Card, CardBody } from "@/components/ui/card";
 import { UserManagement } from "@/components/admin/UserManagement";
 
@@ -18,7 +18,7 @@ export default async function AdminPage() {
     );
   }
 
-  let users = [];
+  let users: UserWithoutPassword[] = [];
   let error: string | null = null;
 
   try {
