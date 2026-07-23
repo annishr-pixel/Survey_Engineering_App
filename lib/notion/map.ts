@@ -2,13 +2,16 @@
  * Defensive extractors for Notion page property values. Notion properties are
  * frequently empty or null on real data, so every helper returns null safely.
  *
- * Verified property types (2026-06):
- *   Enquiries:        Customer Name=title, Email=email, Phone Number=phone_number,
- *                     Job ID=rich_text, Status=select, Customer Approval=select,
- *                     Service Interested=multi_select, Initial Estimated Amount=number
- *   Customer Details: Customer Name=title, Address=rich_text, Phone Number=number,
- *                     Job ID=rich_text, Email=rich_text, Domestic/Commercial=rich_text,
- *                     Annual Energy Consumption(Kwh)=rich_text, *(Y/N)=rich_text
+ * Verified property types (2026-07-23, run scripts/notion-diagnose.ts to re-check):
+ *   Enquiries:        Customer Name=title, Email=rich_text, Phone No=phone_number,
+ *                     Job ID=rich_text, Status=select, Client Approval=select,
+ *                     Service Interested=multi_select, Initial Estimation Amount=number
+ *   Customer Details: Customer Name=title, Customer Address=rich_text, Phone No=phone_number,
+ *                     Job ID=rich_text, Email=email, Domestic/Commercial=rich_text,
+ *                     Annual Energy Consumption=rich_text, Status=select,
+ *                     *(Y/N)=select (Yes/No), EV/ASHP...=select
+ *
+ * Column names are defined centrally in ./fields.ts — do not hard-code them.
  */
 
 // The SDK's property union is wide; we narrow at runtime by `.type`.
@@ -66,6 +69,48 @@ export function getMultiSelect(props: Props, name: string): string[] {
   const p = props[name];
   if (p?.type !== "multi_select") return [];
   return (p.multi_select ?? []).map((o: any) => o.name);
+}
+
+/**
+ * Reads a select value, falling back to rich_text/title. Use for fields that
+ * may be a select in one database version and free text in another (e.g. the
+ * Y/N fields and Status, which are now selects on the live databases).
+ */
+export function getSelectOrText(props: Props, name: string): string | null {
+  return getSelect(props, name) ?? getText(props, name);
+}
+
+/**
+ * Best-effort string for ANY property type — used by the PDF export, which just
+ * needs a human-readable value regardless of the underlying Notion type.
+ */
+export function getAnyText(props: Props, name: string): string | null {
+  const p = props[name];
+  if (!p) return null;
+  switch (p.type) {
+    case "title":
+      return plainText(p.title);
+    case "rich_text":
+      return plainText(p.rich_text);
+    case "select":
+      return p.select?.name ?? null;
+    case "multi_select":
+      return (p.multi_select ?? []).map((o: any) => o.name).join(", ") || null;
+    case "email":
+      return p.email ?? null;
+    case "phone_number":
+      return p.phone_number ?? null;
+    case "number":
+      return p.number != null ? String(p.number) : null;
+    case "date":
+      return p.date?.start ?? null;
+    case "checkbox":
+      return p.checkbox ? "Yes" : "No";
+    case "url":
+      return p.url ?? null;
+    default:
+      return null;
+  }
 }
 
 /** Parses free-text Y/N fields into a boolean (null when blank/ambiguous). */

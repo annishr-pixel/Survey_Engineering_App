@@ -1,13 +1,15 @@
 import "server-only";
+import { inArray } from "drizzle-orm";
 import { notion, notionDataSources } from "./client";
 import { db } from "@/lib/db/client";
-import { leads } from "@/lib/db/schema";
+import { leads, surveys } from "@/lib/db/schema";
 import { env } from "@/lib/env";
 import * as map from "./map";
+import { ENQ, CUST, CUST_PDF_FIELDS, APPROVAL_YES } from "./fields";
 
 /** Ingestion trigger: both must hold on the Enquiries record. */
 const ENQUIRY_STATUS_TRIGGER = "Initial Estimation Generated";
-const APPROVAL_TRIGGER = "Y";
+const APPROVAL_TRIGGER = APPROVAL_YES;
 
 type LeadInsert = typeof leads.$inferInsert;
 
@@ -90,7 +92,7 @@ export async function queryFinalQuotationCandidates(): Promise<FinalQuotationCan
     const readyStatus = env.NOTION_READY_STATUS_NAME.toLowerCase();
     for (const page of res.results) {
       const p = page.properties;
-      const status = map.getText(p, "Status");
+      const status = map.getSelectOrText(p, CUST.status);
       const s = (status ?? "").toLowerCase();
       const relevant =
         s.startsWith(readyStatus) ||
@@ -99,9 +101,9 @@ export async function queryFinalQuotationCandidates(): Promise<FinalQuotationCan
       if (!relevant) continue;
       out.push({
         customerDetailsPageId: page.id,
-        jobId: map.getText(p, "Job ID"),
-        customerName: map.getTitle(p, "Customer Name"),
-        address: map.getText(p, "Address"),
+        jobId: map.getText(p, CUST.jobId),
+        customerName: map.getTitle(p, CUST.customerName),
+        address: map.getText(p, CUST.address),
         status,
       });
     }
@@ -116,7 +118,7 @@ export async function getEnquiryPageIdByJobId(jobId: string): Promise<string | n
   const res = (await notionDataSources.request({
     path: `data_sources/${dataSourceId}/query`,
     method: "post",
-    body: { filter: { property: "Job ID", rich_text: { equals: jobId } }, page_size: 1 },
+    body: { filter: { property: ENQ.jobId, rich_text: { equals: jobId } }, page_size: 1 },
   })) as { results: any[] };
   return res.results[0]?.id ?? null;
 }
@@ -129,25 +131,16 @@ export async function getCustomerDetailsByJobId(
   const res = (await notionDataSources.request({
     path: `data_sources/${dataSourceId}/query`,
     method: "post",
-    body: { filter: { property: "Job ID", rich_text: { equals: jobId } }, page_size: 1 },
+    body: { filter: { property: CUST.jobId, rich_text: { equals: jobId } }, page_size: 1 },
   })) as { results: any[] };
   const page = res.results[0];
   if (!page) return null;
 
   const p = page.properties;
-  const fieldNames = [
-    "Customer Name", "Job ID", "Address", "Email", "Phone Number", "Domestic/Commercial",
-    "Annual Energy Consumption(Kwh)", "Current Electricity Price", "PV Installed(Y/N)",
-    "FIT Arrangement (Y/N)", "Conservation area(Y/N)", "Council details",
-    "EV/ASHP/Electric boilder/All", "Preferences of solar panel installation",
-    "Preferred timeframe ", "Battery Storage Pricing(Y/N)", "Plans/Drawings", "Status",
-  ];
   const fields: Record<string, string> = {};
-  for (const name of fieldNames) {
-    const title = map.getTitle(p, name);
-    const num = map.getNumber(p, name);
-    const val = map.getText(p, name) ?? title ?? (num != null ? String(num) : null);
-    fields[name.trim()] = val ?? "";
+  for (const name of CUST_PDF_FIELDS) {
+    // getAnyText handles every property type (text, select, email, number, date…).
+    fields[name.trim()] = map.getAnyText(p, name) ?? "";
   }
   return { pageId: page.id, fields };
 }
@@ -173,7 +166,7 @@ export async function queryEstimatesForApproval(): Promise<EstimateForApproval[]
   let cursor: string | undefined;
   do {
     const body: Record<string, unknown> = {
-      filter: { property: "Status", select: { equals: ENQUIRY_STATUS_TRIGGER } },
+      filter: { property: ENQ.status, select: { equals: ENQUIRY_STATUS_TRIGGER } },
       page_size: 100,
     };
     if (cursor) body.start_cursor = cursor;
@@ -188,13 +181,13 @@ export async function queryEstimatesForApproval(): Promise<EstimateForApproval[]
       const p = page.properties;
       out.push({
         enquiryPageId: page.id,
-        jobId: map.getText(p, "Job ID"),
-        customerName: map.getTitle(p, "Customer Name"),
-        initialEstimatedAmount: map.getNumber(p, "Initial Estimated Amount"),
-        serviceInterested: map.getMultiSelect(p, "Service Interested"),
-        customerApproval: map.getSelect(p, "Customer Approval"),
-        reasonForRejection: map.getText(p, "Reason for Rejection"),
-        status: map.getSelect(p, "Status"),
+        jobId: map.getText(p, ENQ.jobId),
+        customerName: map.getTitle(p, ENQ.customerName),
+        initialEstimatedAmount: map.getNumber(p, ENQ.estimatedAmount),
+        serviceInterested: map.getMultiSelect(p, ENQ.serviceInterested),
+        customerApproval: map.getSelect(p, ENQ.approval),
+        reasonForRejection: map.getText(p, ENQ.reasonForRejection),
+        status: map.getSelect(p, ENQ.status),
       });
     }
     cursor = res.has_more ? (res.next_cursor ?? undefined) : undefined;
@@ -210,8 +203,8 @@ async function queryApprovedEnquiries(): Promise<any[]> {
     const body: Record<string, unknown> = {
       filter: {
         and: [
-          { property: "Status", select: { equals: ENQUIRY_STATUS_TRIGGER } },
-          { property: "Customer Approval", select: { equals: APPROVAL_TRIGGER } },
+          { property: ENQ.status, select: { equals: ENQUIRY_STATUS_TRIGGER } },
+          { property: ENQ.approval, select: { equals: APPROVAL_TRIGGER } },
         ],
       },
       page_size: 100,
@@ -233,24 +226,31 @@ async function queryApprovedEnquiries(): Promise<any[]> {
 async function findCustomerDetails(jobId: string): Promise<any | null> {
   const res = await notion.databases.query({
     database_id: env.NOTION_CUSTOMER_DETAILS_DB_ID,
-    filter: { property: "Job ID", rich_text: { equals: jobId } },
+    filter: { property: CUST.jobId, rich_text: { equals: jobId } },
     page_size: 1,
   } as any);
   return res.results[0] ?? null;
 }
 
 /**
- * Pulls approved leads from Notion and upserts them into the local cache.
+ * Pulls approved leads from Notion and upserts them into the local cache, then
+ * prunes cached leads that are no longer approved in Notion (e.g. rows left over
+ * from a previous/old database) — but never a lead that already has survey work.
  * One query for Enquiries (paginated) + one per lead for Customer Details.
  */
-export async function syncLeads(): Promise<{ synced: number; skipped: number }> {
+export async function syncLeads(): Promise<{
+  synced: number;
+  skipped: number;
+  pruned: number;
+}> {
   const enquiries = await queryApprovedEnquiries();
   let synced = 0;
   let skipped = 0;
+  const syncedJobIds: string[] = [];
 
   for (const enquiry of enquiries) {
     const e = enquiry.properties;
-    const jobId = map.getText(e, "Job ID");
+    const jobId = map.getText(e, ENQ.jobId);
     if (!jobId) {
       skipped++; // cannot join Customer Details without a Job ID
       continue;
@@ -259,27 +259,27 @@ export async function syncLeads(): Promise<{ synced: number; skipped: number }> 
     const details = await findCustomerDetails(jobId);
     const d = details ? details.properties : {};
 
-    const amount = map.getNumber(e, "Initial Estimated Amount");
+    const amount = map.getNumber(e, ENQ.estimatedAmount);
     const row: LeadInsert = {
       jobId,
       enquiryPageId: enquiry.id,
       customerDetailsPageId: details?.id ?? null,
-      customerName: map.getTitle(e, "Customer Name") ?? map.getTitle(d, "Customer Name"),
-      email: map.getEmail(e, "Email") ?? map.getEmail(d, "Email"),
-      phone: map.getPhone(e, "Phone Number") ?? map.getPhone(d, "Phone Number"),
-      address: map.getText(d, "Address"),
+      customerName: map.getTitle(e, ENQ.customerName) ?? map.getTitle(d, CUST.customerName),
+      email: map.getEmail(e, ENQ.email) ?? map.getEmail(d, CUST.email),
+      phone: map.getPhone(e, ENQ.phone) ?? map.getPhone(d, CUST.phone),
+      address: map.getText(d, CUST.address),
       postcode: null,
-      propertyUse: map.parsePropertyUse(map.getText(d, "Domestic/Commercial")),
-      serviceInterested: map.getMultiSelect(e, "Service Interested"),
+      propertyUse: map.parsePropertyUse(map.getSelectOrText(d, CUST.domesticCommercial)),
+      serviceInterested: map.getMultiSelect(e, ENQ.serviceInterested),
       initialEstimatedAmount: amount != null ? amount.toString() : null,
-      annualConsumptionKwh: map.getText(d, "Annual Energy Consumption(Kwh)"),
-      currentElectricityPrice: map.getText(d, "Current Electricity Price"),
-      pvInstalled: map.parseYesNo(map.getText(d, "PV Installed(Y/N)")),
-      fitArrangement: map.parseYesNo(map.getText(d, "FIT Arrangement (Y/N)")),
-      conservationArea: map.parseYesNo(map.getText(d, "Conservation area(Y/N)")),
-      councilDetails: map.getText(d, "Council details"),
-      notionStatus: map.getSelect(e, "Status"),
-      customerApproval: map.getSelect(e, "Customer Approval"),
+      annualConsumptionKwh: map.getText(d, CUST.annualConsumption),
+      currentElectricityPrice: map.getText(d, CUST.currentElectricityPrice),
+      pvInstalled: map.parseYesNo(map.getSelectOrText(d, CUST.pvInstalled)),
+      fitArrangement: map.parseYesNo(map.getSelectOrText(d, CUST.fitArrangement)),
+      conservationArea: map.parseYesNo(map.getSelectOrText(d, CUST.conservationArea)),
+      councilDetails: map.getText(d, CUST.councilDetails),
+      notionStatus: map.getSelect(e, ENQ.status),
+      customerApproval: map.getSelect(e, ENQ.approval),
       syncedAt: new Date(),
     };
 
@@ -287,17 +287,35 @@ export async function syncLeads(): Promise<{ synced: number; skipped: number }> 
       .insert(leads)
       .values(row)
       .onConflictDoUpdate({ target: leads.jobId, set: row });
+    syncedJobIds.push(jobId);
     synced++;
   }
 
-  return { synced, skipped };
+  // Prune stale cached leads (e.g. rows synced from the previous database) that
+  // are no longer in the approved Notion set. Guard: only prune when we actually
+  // received an approved set, and never delete a lead that has a survey attached.
+  let pruned = 0;
+  if (syncedJobIds.length > 0) {
+    const jobIdsWithSurvey = (
+      await db.select({ jobId: surveys.jobId }).from(surveys)
+    ).map((r) => r.jobId);
+    const keep = new Set<string>([...syncedJobIds, ...jobIdsWithSurvey]);
+    const cached = await db.select({ jobId: leads.jobId }).from(leads);
+    const toDelete = cached.map((r) => r.jobId).filter((j) => !keep.has(j));
+    if (toDelete.length > 0) {
+      await db.delete(leads).where(inArray(leads.jobId, toDelete));
+      pruned = toDelete.length;
+    }
+  }
+
+  return { synced, skipped, pruned };
 }
 
 /**
  * Best-effort write-back of the post-survey status to BOTH Notion databases.
- * The Enquiries `Status` is a select (the option is auto-created by Notion if
- * missing); the Customer Details `Status` is a plain text property, so it takes
- * a rich_text value. Throws on failure so callers can record it for retry.
+ * `Status` is a select on both databases now (the option is auto-created by
+ * Notion if it doesn't exist). Throws on failure so callers can record it for
+ * retry.
  */
 export async function pushReadyForQuotation(
   enquiryPageId: string,
@@ -309,16 +327,16 @@ export async function pushReadyForQuotation(
   await notion.pages.update({
     page_id: enquiryPageId,
     properties: {
-      Status: { select: { name: status } },
+      [ENQ.status]: { select: { name: status } },
     },
   } as any);
 
-  // Customer Details: Status is a plain text (rich_text) property.
+  // Customer Details: Status is a select property.
   if (customerDetailsPageId) {
     await notion.pages.update({
       page_id: customerDetailsPageId,
       properties: {
-        Status: { rich_text: [{ text: { content: status } }] },
+        [CUST.status]: { select: { name: status } },
       },
     } as any);
   }

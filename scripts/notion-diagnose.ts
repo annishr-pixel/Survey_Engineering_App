@@ -73,6 +73,28 @@ async function inspectDatabase(label: string, dbId: string) {
   }
   line(`  → App will use: "${real.name}" [${real.id}]`);
 
+  // 2b. Fetch the data-source schema to list select/multi_select OPTION values.
+  try {
+    const ds = (await notionDS.request({
+      path: `data_sources/${real.id}`,
+      method: "get",
+    })) as { properties?: Record<string, any> };
+    const schema = ds.properties ?? {};
+    line("");
+    line("  Select / multi-select OPTION values:");
+    for (const [name, def] of Object.entries(schema)) {
+      if (def?.type === "select") {
+        const opts = (def.select?.options ?? []).map((o: any) => o.name);
+        line(`    - ${JSON.stringify(name)} (select): ${opts.map((o: string) => JSON.stringify(o)).join(", ")}`);
+      } else if (def?.type === "multi_select") {
+        const opts = (def.multi_select?.options ?? []).map((o: any) => o.name);
+        line(`    - ${JSON.stringify(name)} (multi_select): ${opts.map((o: string) => JSON.stringify(o)).join(", ")}`);
+      }
+    }
+  } catch (err: any) {
+    line(`  (could not fetch schema options: ${err?.message ?? err})`);
+  }
+
   // 3 + 4. Query the data source: schema (from first row) + count + sample
   try {
     const res = (await notionDS.request({

@@ -12,6 +12,7 @@ import {
   FINAL_APPROVED_STATUS,
   FINAL_REJECTED_STATUS,
 } from "@/lib/notion/sync";
+import { ENQ, CUST, APPROVAL_YES, APPROVAL_NO } from "@/lib/notion/fields";
 import { logEvent } from "@/lib/logger";
 
 async function requireSales() {
@@ -33,7 +34,7 @@ export async function approveCustomer(enquiryPageId: string): Promise<ApprovalRe
   try {
     await notion.pages.update({
       page_id: enquiryPageId,
-      properties: { "Customer Approval": { select: { name: "Y" } } },
+      properties: { [ENQ.approval]: { select: { name: APPROVAL_YES } } },
     } as any);
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Notion update failed." };
@@ -79,9 +80,9 @@ export async function rejectCustomer(
     await notion.pages.update({
       page_id: enquiryPageId,
       properties: {
-        "Customer Approval": { select: { name: "N" } },
-        "Reason for Rejection": { rich_text: [{ text: { content: trimmed } }] },
-        Status: { select: { name: "Rejected" } },
+        [ENQ.approval]: { select: { name: APPROVAL_NO } },
+        [ENQ.reasonForRejection]: { rich_text: [{ text: { content: trimmed } }] },
+        [ENQ.status]: { select: { name: "Rejected" } },
       },
     } as any);
   } catch (e) {
@@ -132,24 +133,24 @@ export async function approveFinalQuotation(
   await logEvent("info", "final_quotation.approve.start", ctx);
 
   try {
-    // 1) Customer Details status text
+    // 1) Customer Details status (select)
     await notion.pages.update({
       page_id: customerDetailsPageId,
-      properties: { Status: { rich_text: [{ text: { content: FINAL_APPROVED_STATUS } }] } },
+      properties: { [CUST.status]: { select: { name: FINAL_APPROVED_STATUS } } },
     } as any);
     await logEvent("info", "final_quotation.approve.customer_details_updated", {
       ...ctx,
       wrote: { db: "Customer Details", field: "Status", value: FINAL_APPROVED_STATUS },
     });
 
-    // 2) Enquiries (Treadlight Website Enquiries): Status + Customer Approval = Y
+    // 2) Enquiries (Treadlighter Website Enquiry): Status + Client Approval = Y
     const enquiryPageId = jobId ? await getEnquiryPageIdByJobId(jobId) : null;
     if (enquiryPageId) {
       await notion.pages.update({
         page_id: enquiryPageId,
         properties: {
-          Status: { select: { name: FINAL_APPROVED_STATUS } },
-          "Customer Approval": { select: { name: "Y" } },
+          [ENQ.status]: { select: { name: FINAL_APPROVED_STATUS } },
+          [ENQ.approval]: { select: { name: APPROVAL_YES } },
         },
       } as any);
       await logEvent("info", "final_quotation.approve.enquiries_updated", {
@@ -215,34 +216,35 @@ export async function rejectFinalQuotation(
   }
   await logEvent("info", "final_quotation.reject.start", ctx);
 
-  const statusText = `${FINAL_REJECTED_STATUS} — ${trimmed}`;
   try {
-    // 1) Customer Details status text (with reason appended)
+    // 1) Customer Details status (select). The reason is recorded on the
+    //    Enquiries "Reason for Rejection" field below — Status is a constrained
+    //    select now, so we don't append free text to it.
     await notion.pages.update({
       page_id: customerDetailsPageId,
-      properties: { Status: { rich_text: [{ text: { content: statusText } }] } },
+      properties: { [CUST.status]: { select: { name: FINAL_REJECTED_STATUS } } },
     } as any);
     await logEvent("info", "final_quotation.reject.customer_details_updated", {
       ...ctx,
-      wrote: { db: "Customer Details", field: "Status", value: statusText },
+      wrote: { db: "Customer Details", field: "Status", value: FINAL_REJECTED_STATUS },
     });
 
-    // 2) Enquiries: Customer Approval = N + Reason for Rejection
+    // 2) Enquiries: Client Approval = N + Reason for Rejection
     const enquiryPageId = jobId ? await getEnquiryPageIdByJobId(jobId) : null;
     if (enquiryPageId) {
       await notion.pages.update({
         page_id: enquiryPageId,
         properties: {
-          "Customer Approval": { select: { name: "N" } },
-          "Reason for Rejection": { rich_text: [{ text: { content: trimmed } }] },
+          [ENQ.approval]: { select: { name: APPROVAL_NO } },
+          [ENQ.reasonForRejection]: { rich_text: [{ text: { content: trimmed } }] },
         },
       } as any);
       await logEvent("info", "final_quotation.reject.enquiries_updated", {
         ...ctx,
         enquiryPageId,
         wrote: {
-          db: "Treadlight Website Enquiries",
-          fields: { "Customer Approval": "N", "Reason for Rejection": trimmed },
+          db: "Treadlighter Website Enquiry",
+          fields: { [ENQ.approval]: APPROVAL_NO, [ENQ.reasonForRejection]: trimmed },
         },
       });
     } else {
