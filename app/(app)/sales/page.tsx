@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { and, desc, eq, type SQL } from "drizzle-orm";
+import { BarChart3, ClipboardList, Settings } from "lucide-react";
 import { db } from "@/lib/db/client";
 import { leads, surveys } from "@/lib/db/schema";
 import { ROOF_TYPES, MAIN_FUSE_RATINGS } from "@/lib/validation/survey";
@@ -55,6 +56,51 @@ export default async function SalesPage({
 
   return (
     <div className="space-y-5">
+      {/* Navigation Tiles */}
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Link href="/sales/survey-approvals" className="block">
+          <Card className="transition-shadow hover:shadow-md h-full">
+            <CardBody className="space-y-2">
+              <div className="flex items-center gap-2">
+                <ClipboardList className="h-5 w-5 text-amber-600" />
+                <h2 className="font-semibold text-slate-900">Survey Approvals</h2>
+              </div>
+              <p className="text-xs text-slate-500">
+                Approve customer surveys and assign surveyors
+              </p>
+            </CardBody>
+          </Card>
+        </Link>
+
+        <Link href="/sales/final-quotation" className="block">
+          <Card className="transition-shadow hover:shadow-md h-full">
+            <CardBody className="space-y-2">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5 text-green-600" />
+                <h2 className="font-semibold text-slate-900">Final Quotation</h2>
+              </div>
+              <p className="text-xs text-slate-500">
+                Review and approve final quotations
+              </p>
+            </CardBody>
+          </Card>
+        </Link>
+
+        <Link href="/sales/admin" className="block">
+          <Card className="transition-shadow hover:shadow-md h-full">
+            <CardBody className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Settings className="h-5 w-5 text-blue-600" />
+                <h2 className="font-semibold text-slate-900">Admin</h2>
+              </div>
+              <p className="text-xs text-slate-500">
+                Manage users, roles, and permissions
+              </p>
+            </CardBody>
+          </Card>
+        </Link>
+      </div>
+
       <div>
         <h1 className="text-xl font-semibold">Completed surveys</h1>
         <p className="text-sm text-slate-500">
