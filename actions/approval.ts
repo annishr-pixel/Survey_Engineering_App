@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
-import { leads } from "@/lib/db/schema";
+import { leads, users, surveys } from "@/lib/db/schema";
 import { notion } from "@/lib/notion/client";
 import {
   syncLeads,
@@ -25,11 +25,33 @@ async function requireSales() {
 
 export type ApprovalResult = { ok: true } | { ok: false; error: string };
 
+export type Surveyor = {
+  id: string;
+  name: string | null;
+  email: string;
+};
+
+/**
+ * Fetch all surveyors from the users table.
+ */
+export async function getSurveyors(): Promise<Surveyor[]> {
+  await requireSales();
+  const surveyors = await db
+    .select({ id: users.id, name: users.name, email: users.email })
+    .from(users)
+    .where(eq(users.role, "surveyor"));
+  return surveyors;
+}
+
 /**
  * Customer opted in for the survey → set Notion Enquiries "Customer Approval"
  * to "Y", then sync so the approved lead appears in the surveyor's job list.
+ * Optionally assign a surveyor to the survey.
  */
-export async function approveCustomer(enquiryPageId: string): Promise<ApprovalResult> {
+export async function approveCustomer(
+  enquiryPageId: string,
+  surveyorId?: string,
+): Promise<ApprovalResult> {
   await requireSales();
   try {
     await notion.pages.update({
@@ -53,10 +75,47 @@ export async function approveCustomer(enquiryPageId: string): Promise<ApprovalRe
       .update(leads)
       .set({ customerApproval: "Y", reasonForRejection: null })
       .where(eq(leads.enquiryPageId, enquiryPageId))
-      .returning({ id: leads.id });
-    await logEvent("info", "initial_approval.approve.leads_updated", { enquiryPageId, rowsUpdated: upd.length });
+      .returning({ id: leads.id, jobId: leads.jobId });
+
+    if (surveyorId && upd.length > 0) {
+      // Create or update survey with the assigned surveyor
+      const lead = upd[0];
+      const existingSurvey = await db
+        .select({ id: surveys.id })
+        .from(surveys)
+        .where(eq(surveys.jobId, lead.jobId));
+
+      if (existingSurvey.length === 0) {
+        // Create new survey with surveyor assignment
+        await db
+          .insert(surveys)
+          .values({
+            jobId: lead.jobId,
+            leadId: lead.id,
+            surveyorId,
+            status: "draft",
+          })
+          .onConflictDoNothing({ target: surveys.jobId });
+      } else {
+        // Update existing survey with surveyor assignment
+        await db
+          .update(surveys)
+          .set({ surveyorId })
+          .where(eq(surveys.jobId, lead.jobId));
+      }
+    }
+
+    await logEvent("info", "initial_approval.approve.leads_updated", {
+      enquiryPageId,
+      surveyorId,
+      rowsUpdated: upd.length
+    });
   } catch (e) {
-    await logEvent("error", "initial_approval.approve.leads_update_failed", { enquiryPageId, error: e });
+    await logEvent("error", "initial_approval.approve.leads_update_failed", {
+      enquiryPageId,
+      surveyorId,
+      error: e
+    });
   }
 
   revalidatePath("/sales/survey-approvals");

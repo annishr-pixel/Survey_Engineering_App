@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
+import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { leads, surveys } from "@/lib/db/schema";
 import { RefreshLeadsButton } from "@/components/RefreshLeadsButton";
@@ -15,15 +16,25 @@ const statusBadge: Record<string, string> = {
 };
 
 export default async function JobsPage() {
+  const session = await auth();
+  const surveyorId = session?.user?.id;
+
   const [allLeads, surveyRows] = await Promise.all([
-    // Only show jobs the customer has approved (Customer Approval = "Y" in the
-    // Notion Enquiries DB, mirrored into the leads cache). Rejected / pending
-    // leads are hidden from the surveyor.
-    db
-      .select()
-      .from(leads)
-      .where(eq(leads.customerApproval, "Y"))
-      .orderBy(desc(leads.syncedAt)),
+    // Only show jobs assigned to the current surveyor that have been approved
+    surveyorId
+      ? db
+          .select()
+          .from(leads)
+          .innerJoin(surveys, eq(surveys.jobId, leads.jobId))
+          .where(
+            and(
+              eq(leads.customerApproval, "Y"),
+              eq(surveys.surveyorId, surveyorId)
+            )
+          )
+          .orderBy(desc(leads.syncedAt))
+          .then((results) => results.map((r) => r.leads))
+      : [],
     db.select({ jobId: surveys.jobId, status: surveys.status }).from(surveys),
   ]);
 
@@ -35,7 +46,7 @@ export default async function JobsPage() {
         <div>
           <h1 className="text-xl font-semibold">Assigned jobs</h1>
           <p className="text-sm text-slate-500">
-            Approved leads pulled from Notion ({allLeads.length}).
+            Surveys assigned to you by the sales team ({allLeads.length}).
           </p>
         </div>
         <RefreshLeadsButton />
@@ -44,8 +55,11 @@ export default async function JobsPage() {
       {allLeads.length === 0 ? (
         <Card>
           <CardBody className="text-center text-slate-500">
-            No leads yet. Click <strong>Refresh leads</strong> to pull approved
-            enquiries from Notion.
+            {!surveyorId ? (
+              <>Not authenticated. Please log in.</>
+            ) : (
+              <>No jobs assigned to you yet. Check back later.</>
+            )}
           </CardBody>
         </Card>
       ) : (

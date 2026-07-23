@@ -5,8 +5,10 @@ import {
   getLeadByJobId,
   getOrCreateDraft,
   getSurveyPhotos,
+  getSurveyByJobId,
 } from "@/lib/db/surveys";
 import { SurveyForm } from "@/components/survey/SurveyForm";
+import { Card, CardBody } from "@/components/ui/card";
 import type { PhotoRecord } from "@/actions/photo";
 
 export const dynamic = "force-dynamic";
@@ -23,6 +25,27 @@ export default async function JobSurveyPage({
   const surveyorId = session!.user.id;
 
   const lead = await getLeadByJobId(jobId);
+  const existingSurvey = await getSurveyByJobId(jobId);
+
+  // Check if survey is assigned to this surveyor
+  if (existingSurvey && existingSurvey.surveyorId && existingSurvey.surveyorId !== surveyorId) {
+    return (
+      <div className="space-y-4">
+        <Link
+          href="/jobs"
+          className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800"
+        >
+          <ChevronLeft className="h-4 w-4" /> All jobs
+        </Link>
+        <Card>
+          <CardBody className="text-center text-red-600">
+            This job is not assigned to you. Please contact your manager.
+          </CardBody>
+        </Card>
+      </div>
+    );
+  }
+
   const survey = await getOrCreateDraft(jobId, surveyorId, lead?.id ?? null);
   const photos = await getSurveyPhotos(survey.id);
 

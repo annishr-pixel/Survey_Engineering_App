@@ -1,4 +1,3 @@
-import { FileText } from "lucide-react";
 import { queryEstimatesForApproval } from "@/lib/notion/sync";
 import { Card, CardBody } from "@/components/ui/card";
 import { ApprovalActions } from "@/components/sales/ApprovalActions";
@@ -78,20 +77,7 @@ export default async function SurveyApprovalsPage() {
                     </span>
                   </div>
 
-                  <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3">
-                    {r.jobId ? (
-                      <a
-                        href={`/api/estimation/${encodeURIComponent(r.jobId)}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1.5 text-sm font-medium text-brand hover:underline"
-                      >
-                        <FileText className="h-4 w-4" /> View initial estimation PDF
-                      </a>
-                    ) : (
-                      <span className="text-sm text-slate-400">No Job ID — PDF unavailable</span>
-                    )}
-
+                  <div className="flex justify-end border-t border-slate-100 pt-3">
                     <ApprovalActions
                       enquiryPageId={r.enquiryPageId}
                       currentApproval={r.customerApproval}
