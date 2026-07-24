@@ -60,8 +60,6 @@ export default async function SalesPage({
       <HeroBanner
         title="Sales Dashboard"
         subtitle="Review completed solar PV surveys and prepare quotations for customers"
-        imageUrl="https://images.unsplash.com/photo-1560472355-536de3962603?w=400&h=400&fit=crop"
-        imageAlt="Solar Energy Installation"
       >
         <div className="flex flex-wrap gap-3">
           <Link href="/sales/admin">

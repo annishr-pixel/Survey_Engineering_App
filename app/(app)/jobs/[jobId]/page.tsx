@@ -71,8 +71,6 @@ export default async function JobSurveyPage({
       <HeroBanner
         title={lead?.customerName ?? jobId}
         subtitle="Complete the site survey form with all technical details"
-        imageUrl="https://images.unsplash.com/photo-1581092165854-915ec6a65e51?w=400&h=400&fit=crop"
-        imageAlt="Solar PV Installation"
       />
 
       <SurveyForm survey={survey} lead={lead} photosBySection={photosBySection} />

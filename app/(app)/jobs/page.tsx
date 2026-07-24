@@ -46,8 +46,6 @@ export default async function JobsPage() {
       <HeroBanner
         title="Your Assigned Surveys"
         subtitle="Complete solar PV site surveys and battery storage assessments"
-        imageUrl="https://images.unsplash.com/photo-1581092165854-915ec6a65e51?w=400&h=400&fit=crop"
-        imageAlt="Solar Installation Survey"
       >
         <RefreshLeadsButton />
       </HeroBanner>
