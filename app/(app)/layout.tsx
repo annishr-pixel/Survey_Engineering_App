@@ -50,6 +50,9 @@ export default async function AppLayout({
                   <Link href="/sales/reports" className="rounded px-2 py-1 text-slate-300 hover:bg-slate-700 hover:text-white">
                     Reports
                   </Link>
+                  <Link href="/sales/admin" className="rounded px-2 py-1 text-slate-300 hover:bg-slate-700 hover:text-white">
+                    Admin
+                  </Link>
                 </>
               ) : (
                 <Link href="/jobs" className="rounded px-2 py-1 text-slate-300 hover:bg-slate-700 hover:text-white">

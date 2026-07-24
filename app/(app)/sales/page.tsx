@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { and, desc, eq, type SQL } from "drizzle-orm";
-import { Settings } from "lucide-react";
 import { db } from "@/lib/db/client";
 import { leads, surveys } from "@/lib/db/schema";
 import { ROOF_TYPES, MAIN_FUSE_RATINGS } from "@/lib/validation/survey";
@@ -60,15 +59,7 @@ export default async function SalesPage({
       <HeroBanner
         title="Sales Dashboard"
         subtitle="Review completed solar PV surveys and prepare quotations for customers"
-      >
-        <div className="flex flex-wrap gap-3">
-          <Link href="/sales/admin">
-            <Button variant="secondary" className="gap-2">
-              <Settings className="h-4 w-4" /> Admin
-            </Button>
-          </Link>
-        </div>
-      </HeroBanner>
+      />
 
       <div>
         <h2 className="text-2xl font-semibold text-slate-900">Sales-Pitch</h2>
