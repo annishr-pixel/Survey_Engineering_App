@@ -49,8 +49,8 @@ export default async function AdminPage() {
       <HeroBanner
         title="Admin Control Panel"
         subtitle="Manage users, assign roles, and control team permissions"
-        imageUrl="https://images.unsplash.com/photo-1552664730-d307ca884978?w=300&h=300&fit=crop"
-        imageAlt="Admin Dashboard"
+        imageUrl="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400&h=400&fit=crop"
+        imageAlt="Team Management"
       />
 
       <UserManagement initialUsers={users} />

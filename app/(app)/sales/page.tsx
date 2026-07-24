@@ -59,17 +59,11 @@ export default async function SalesPage({
     <div className="space-y-5">
       <HeroBanner
         title="Sales Dashboard"
-        subtitle="Manage solar PV projects and battery storage installations"
-        imageUrl="https://images.unsplash.com/photo-1497440991325-5e0e4c3bf361?w=300&h=300&fit=crop"
-        imageAlt="Solar Panels"
+        subtitle="Review completed solar PV surveys and prepare quotations for customers"
+        imageUrl="https://images.unsplash.com/photo-1560472355-536de3962603?w=400&h=400&fit=crop"
+        imageAlt="Solar Energy Installation"
       >
         <div className="flex flex-wrap gap-3">
-          <Link href="/sales/survey-approvals">
-            <Button>Survey Approvals</Button>
-          </Link>
-          <Link href="/sales/final-quotation">
-            <Button variant="secondary">Final Quotation</Button>
-          </Link>
           <Link href="/sales/admin">
             <Button variant="secondary" className="gap-2">
               <Settings className="h-4 w-4" /> Admin

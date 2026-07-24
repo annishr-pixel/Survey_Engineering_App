@@ -36,8 +36,8 @@ export default async function SurveyApprovalsPage() {
       <HeroBanner
         title="Survey Approvals"
         subtitle="Review and approve customer surveys. Assign surveyors to approved jobs."
-        imageUrl="https://images.unsplash.com/photo-1552664730-d307ca884978?w=300&h=300&fit=crop"
-        imageAlt="Energy Audit"
+        imageUrl="https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&h=400&fit=crop"
+        imageAlt="Solar Panel Installation"
       />
 
       <div className="rounded-lg bg-blue-50 p-4 border border-blue-200">

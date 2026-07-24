@@ -60,8 +60,8 @@ export default async function FinalQuotationPage() {
       <HeroBanner
         title="Final Quotation Approvals"
         subtitle="Review and approve final quotations for completed surveys"
-        imageUrl="https://images.unsplash.com/photo-1552664730-d307ca884978?w=300&h=300&fit=crop"
-        imageAlt="Quotation Review"
+        imageUrl="https://images.unsplash.com/photo-1556742102-c6c3f1dccfd3?w=400&h=400&fit=crop"
+        imageAlt="Solar Battery Storage"
       />
 
       <div className="rounded-lg bg-amber-50 p-4 border border-amber-200">

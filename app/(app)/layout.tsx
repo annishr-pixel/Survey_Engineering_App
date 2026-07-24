@@ -38,14 +38,14 @@ export default async function AppLayout({
             <nav className="flex items-center gap-1">
               {role === "sales" ? (
                 <>
+                  <Link href="/sales" className="rounded px-2 py-1 text-slate-300 hover:bg-slate-700 hover:text-white">
+                    Sales-Pitch
+                  </Link>
                   <Link href="/sales/survey-approvals" className="rounded px-2 py-1 text-slate-300 hover:bg-slate-700 hover:text-white">
                     Survey Approvals
                   </Link>
                   <Link href="/sales/final-quotation" className="rounded px-2 py-1 text-slate-300 hover:bg-slate-700 hover:text-white">
                     Final Quotation
-                  </Link>
-                  <Link href="/sales" className="rounded px-2 py-1 text-slate-300 hover:bg-slate-700 hover:text-white">
-                    Completed
                   </Link>
                   <Link href="/sales/reports" className="rounded px-2 py-1 text-slate-300 hover:bg-slate-700 hover:text-white">
                     Reports
