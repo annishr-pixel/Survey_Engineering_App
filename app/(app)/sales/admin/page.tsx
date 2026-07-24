@@ -1,7 +1,10 @@
+import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { getAllUsers, type UserWithoutPassword } from "@/actions/users";
 import { Card, CardBody } from "@/components/ui/card";
 import { UserManagement } from "@/components/admin/UserManagement";
+import { HeroBanner } from "@/components/HeroBanner";
 
 export const dynamic = "force-dynamic";
 
@@ -37,12 +40,18 @@ export default async function AdminPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Admin Panel</h1>
-        <p className="mt-2 text-sm text-slate-500">
-          Manage users, roles, and permissions. Create accounts for surveyors and sales team members.
-        </p>
+      <div className="mb-4">
+        <Link href="/sales" className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800">
+          <ChevronLeft className="h-4 w-4" /> Back to Dashboard
+        </Link>
       </div>
+
+      <HeroBanner
+        title="Admin Control Panel"
+        subtitle="Manage users, assign roles, and control team permissions"
+        imageUrl="https://images.unsplash.com/photo-1552664730-d307ca884978?w=300&h=300&fit=crop"
+        imageAlt="Admin Dashboard"
+      />
 
       <UserManagement initialUsers={users} />
     </div>

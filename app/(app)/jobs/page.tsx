@@ -5,6 +5,7 @@ import { db } from "@/lib/db/client";
 import { leads, surveys } from "@/lib/db/schema";
 import { RefreshLeadsButton } from "@/components/RefreshLeadsButton";
 import { Card, CardBody } from "@/components/ui/card";
+import { HeroBanner } from "@/components/HeroBanner";
 
 // Always read fresh from the leads cache.
 export const dynamic = "force-dynamic";
@@ -42,15 +43,14 @@ export default async function JobsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold">Assigned jobs</h1>
-          <p className="text-sm text-slate-500">
-            Surveys assigned to you by the sales team ({allLeads.length}).
-          </p>
-        </div>
+      <HeroBanner
+        title="Your Assigned Surveys"
+        subtitle="Complete solar PV site surveys and battery storage assessments"
+        imageUrl="https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=300&h=300&fit=crop"
+        imageAlt="Site Survey"
+      >
         <RefreshLeadsButton />
-      </div>
+      </HeroBanner>
 
       {allLeads.length === 0 ? (
         <Card>

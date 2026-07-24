@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { and, desc, eq, type SQL } from "drizzle-orm";
-import { BarChart3, ClipboardList, Settings } from "lucide-react";
+import { Settings } from "lucide-react";
 import { db } from "@/lib/db/client";
 import { leads, surveys } from "@/lib/db/schema";
 import { ROOF_TYPES, MAIN_FUSE_RATINGS } from "@/lib/validation/survey";
 import { Card, CardBody } from "@/components/ui/card";
 import { Select, Label } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
+import { HeroBanner } from "@/components/HeroBanner";
 
 export const dynamic = "force-dynamic";
 
@@ -56,55 +57,31 @@ export default async function SalesPage({
 
   return (
     <div className="space-y-5">
-      {/* Navigation Tiles */}
-      <div className="grid gap-3 sm:grid-cols-3">
-        <Link href="/sales/survey-approvals" className="block">
-          <Card className="transition-shadow hover:shadow-md h-full">
-            <CardBody className="space-y-2">
-              <div className="flex items-center gap-2">
-                <ClipboardList className="h-5 w-5 text-amber-600" />
-                <h2 className="font-semibold text-slate-900">Survey Approvals</h2>
-              </div>
-              <p className="text-xs text-slate-500">
-                Approve customer surveys and assign surveyors
-              </p>
-            </CardBody>
-          </Card>
-        </Link>
-
-        <Link href="/sales/final-quotation" className="block">
-          <Card className="transition-shadow hover:shadow-md h-full">
-            <CardBody className="space-y-2">
-              <div className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5 text-green-600" />
-                <h2 className="font-semibold text-slate-900">Final Quotation</h2>
-              </div>
-              <p className="text-xs text-slate-500">
-                Review and approve final quotations
-              </p>
-            </CardBody>
-          </Card>
-        </Link>
-
-        <Link href="/sales/admin" className="block">
-          <Card className="transition-shadow hover:shadow-md h-full">
-            <CardBody className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Settings className="h-5 w-5 text-blue-600" />
-                <h2 className="font-semibold text-slate-900">Admin</h2>
-              </div>
-              <p className="text-xs text-slate-500">
-                Manage users, roles, and permissions
-              </p>
-            </CardBody>
-          </Card>
-        </Link>
-      </div>
+      <HeroBanner
+        title="Sales Dashboard"
+        subtitle="Manage solar PV projects and battery storage installations"
+        imageUrl="https://images.unsplash.com/photo-1497440991325-5e0e4c3bf361?w=300&h=300&fit=crop"
+        imageAlt="Solar Panels"
+      >
+        <div className="flex flex-wrap gap-3">
+          <Link href="/sales/survey-approvals">
+            <Button>Survey Approvals</Button>
+          </Link>
+          <Link href="/sales/final-quotation">
+            <Button variant="secondary">Final Quotation</Button>
+          </Link>
+          <Link href="/sales/admin">
+            <Button variant="secondary" className="gap-2">
+              <Settings className="h-4 w-4" /> Admin
+            </Button>
+          </Link>
+        </div>
+      </HeroBanner>
 
       <div>
-        <h1 className="text-xl font-semibold">Completed surveys</h1>
-        <p className="text-sm text-slate-500">
-          Submitted surveys ready for quotation ({rows.length}).
+        <h2 className="text-2xl font-semibold text-slate-900">Sales-Pitch</h2>
+        <p className="mt-1 text-sm text-slate-500">
+          Submitted surveys ready for quotation ({rows.length}). Review completed projects and prepare proposals.
         </p>
       </div>
 

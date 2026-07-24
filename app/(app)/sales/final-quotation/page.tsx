@@ -1,9 +1,12 @@
+import Link from "next/link";
 import { inArray } from "drizzle-orm";
+import { ChevronLeft } from "lucide-react";
 import { queryFinalQuotationCandidates } from "@/lib/notion/sync";
 import { db } from "@/lib/db/client";
 import { surveys } from "@/lib/db/schema";
 import { Card, CardBody } from "@/components/ui/card";
 import { FinalQuotationActions } from "@/components/sales/FinalQuotationActions";
+import { HeroBanner } from "@/components/HeroBanner";
 import { logEvent } from "@/lib/logger";
 
 export const dynamic = "force-dynamic";
@@ -48,11 +51,23 @@ export default async function FinalQuotationPage() {
 
   return (
     <div className="space-y-5">
-      <div>
-        <h1 className="text-xl font-semibold">Final quotation approvals</h1>
-        <p className="text-sm text-slate-500">
-          Customer Details at &ldquo;Survey done - Ready for Quotation&rdquo; ({rows.length})
-          {pending > 0 ? ` · ${pending} awaiting confirmation` : ""}.
+      <div className="mb-4">
+        <Link href="/sales" className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800">
+          <ChevronLeft className="h-4 w-4" /> Back to Dashboard
+        </Link>
+      </div>
+
+      <HeroBanner
+        title="Final Quotation Approvals"
+        subtitle="Review and approve final quotations for completed surveys"
+        imageUrl="https://images.unsplash.com/photo-1552664730-d307ca884978?w=300&h=300&fit=crop"
+        imageAlt="Quotation Review"
+      />
+
+      <div className="rounded-lg bg-amber-50 p-4 border border-amber-200">
+        <p className="text-sm text-slate-700">
+          <strong>Ready for Quotation:</strong> {rows.length} ·
+          <strong className="ml-4">Awaiting Confirmation:</strong> {pending}
         </p>
       </div>
 

@@ -1,6 +1,10 @@
+import Link from "next/link";
 import { queryEstimatesForApproval } from "@/lib/notion/sync";
 import { Card, CardBody } from "@/components/ui/card";
 import { ApprovalActions } from "@/components/sales/ApprovalActions";
+import { Button } from "@/components/ui/button";
+import { HeroBanner } from "@/components/HeroBanner";
+import { ChevronLeft } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -23,12 +27,23 @@ export default async function SurveyApprovalsPage() {
 
   return (
     <div className="space-y-5">
-      <div>
-        <h1 className="text-xl font-semibold">Survey approvals</h1>
-        <p className="text-sm text-slate-500">
-          Customers awaiting the go-ahead. Once approved (Y), the job becomes visible to the
-          surveyor; if rejected (N), it is marked rejected with a reason. {rows.length} shown
-          {pending > 0 ? ` · ${pending} awaiting approval` : ""}.
+      <div className="mb-4">
+        <Link href="/sales" className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800">
+          <ChevronLeft className="h-4 w-4" /> Back to Dashboard
+        </Link>
+      </div>
+
+      <HeroBanner
+        title="Survey Approvals"
+        subtitle="Review and approve customer surveys. Assign surveyors to approved jobs."
+        imageUrl="https://images.unsplash.com/photo-1552664730-d307ca884978?w=300&h=300&fit=crop"
+        imageAlt="Energy Audit"
+      />
+
+      <div className="rounded-lg bg-blue-50 p-4 border border-blue-200">
+        <p className="text-sm text-slate-700">
+          <strong>Total Enquiries:</strong> {rows.length} ·
+          <strong className="ml-4">Awaiting Approval:</strong> {pending}
         </p>
       </div>
 
